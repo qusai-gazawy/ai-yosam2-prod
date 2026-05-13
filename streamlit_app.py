@@ -93,9 +93,9 @@ if uploaded_pdf and uploaded_img:
             
             # --- GPT Execution ---
             with col1:
-                st.write("**GPT-4o**")
+                st.write("**GPT-5.2**")
                 res_oa = client_openai.chat.completions.create(
-                    model="gpt-4o",
+                    model="gpt-5.2",
                     messages=[
                         {"role": "system", "content": m["sys"]},
                         {"role": "user", "content": [
@@ -106,13 +106,13 @@ if uploaded_pdf and uploaded_img:
                 )
                 gpt_out = res_oa.choices[0].message.content
                 st.info(gpt_out)
-                results.append((m["name"], "GPT-4o", gpt_out))
+                results.append((m["name"], "GPT-5.2", gpt_out))
 
             # --- Gemini Execution ---
             with col2:
                 st.write("**Gemini 1.5 Pro**")
                 # Using 1.5 Pro/Flash for 2026 stability
-                model_gem = genai.GenerativeModel(model_name='gemini-1.5-pro', system_instruction=m["sys"])
+                model_gem = genai.GenerativeModel(model_name='gemini-2.5-pro', system_instruction=m["sys"])
                 res_gem = model_gem.generate_content([user_prompt_text + m["user_ext"], img_pil])
                 gem_out = res_gem.text
                 st.success(gem_out)
