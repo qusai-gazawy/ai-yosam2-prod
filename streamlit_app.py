@@ -80,7 +80,7 @@ if uploaded_pdf and uploaded_img:
 
         # DEFINING THE 3 METHODS
         methods = [
-            {"name": "1. Basic User Prompt", "sys": user_prompt, "user_ext": ""},
+            {"name": "1. Basic User Prompt", "sys": user_prompt_text, "user_ext": ""},
             {"name": "2. System Prompt Only", "sys": system_prompt, "user_ext": ""},
             {"name": "3. RAG (Context + System)", "sys": system_prompt, "user_ext": f"\nCONTEXT:\n{relevant_context}"}
         ]
