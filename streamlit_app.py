@@ -217,10 +217,10 @@ if uploaded_pdf and uploaded_img:
 
         # Display Results
         with col1:
-            st.subheader("GPT-4o Report")
+            st.subheader("GPT-5.2 Report")
             st.info(oa_ans)
         with col2:
-            st.subheader("Gemini 1.5 Report")
+            st.subheader("Gemini 2.5 Report")
             st.success(gem_ans)
 
         # --- DEEPSEEK AUDIT ---
