@@ -79,7 +79,7 @@ if uploaded_pdf and uploaded_img:
         with st.spinner("Analyzing with GPT and Gemini..."):
             # GPT Analysis (Note: using gpt-4o as gpt-5.2 doesn't exist yet)
             res_oa = client_openai.chat.completions.create(
-                model="gpt-4o",
+                model="gpt-5.2",
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": [
@@ -91,7 +91,7 @@ if uploaded_pdf and uploaded_img:
             oa_ans = res_oa.choices[0].message.content
 
             # Gemini Analysis (Note: using gemini-1.5-flash)
-            model_gemini = genai.GenerativeModel(model_name='gemini-1.5-flash', system_instruction=system_prompt)
+            model_gemini = genai.GenerativeModel(model_name='gemini-2.5-flash', system_instruction=system_prompt)
             res_gem = model_gemini.generate_content(["Analyze this image.", img_pil])
             gem_ans = res_gem.text
 
@@ -107,7 +107,7 @@ if uploaded_pdf and uploaded_img:
         st.divider()
         st.header("🧠 DeepSeek Reasoner Audit")
         
-        for name, ans in [("GPT-4o", oa_ans), ("Gemini 1.5", gem_ans)]:
+        for name, ans in [("GPT-4o", oa_ans), ("Gemini 2.5", gem_ans)]:
             with st.expander(f"Audit for {name}"):
                 audit_query = f"CONTEXT: {relevant_context}\n\nANSWER: {ans}\n\n{groundedness_rater_prompt}"
                 audit_res = client_deepseek.chat.completions.create(
