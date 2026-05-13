@@ -110,9 +110,9 @@ if uploaded_pdf and uploaded_img:
 
             # --- Gemini Execution ---
             with col2:
-                st.write("**Gemini 1.5 Pro**")
-                # Using 1.5 Pro/Flash for 2026 stability
-                model_gem = genai.GenerativeModel(model_name='gemini-2.5-pro', system_instruction=m["sys"])
+                st.write("**Gemini 2.5 Flash**")
+                # Using 2.5 Flash for 2026 stability
+                model_gem = genai.GenerativeModel(model_name='gemini-2.5-flash', system_instruction=m["sys"])
                 res_gem = model_gem.generate_content([user_prompt_text + m["user_ext"], img_pil])
                 gem_out = res_gem.text
                 st.success(gem_out)
