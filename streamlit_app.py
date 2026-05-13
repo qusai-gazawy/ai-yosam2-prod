@@ -172,7 +172,7 @@ DO NOT penalize for missing image access.
 """
 
 # --- 4. APP INTERFACE ---
-st.title("🏥 YO-SAM: Medical Image Interpretation")
+st.title("AI-YOSAM2: Medical Image Interpretation")
 st.sidebar.header("Upload Data")
 
 uploaded_pdf = st.sidebar.file_uploader("Clinical Manual (PDF)", type="pdf")
