@@ -47,6 +47,11 @@ def encode_image_base64(image_bytes):
     return base64.b64encode(image_bytes).decode('utf-8')
 
 # PROMPTS
+
+user_prompt = """
+Describe what you observe in the provided X-Ray image according to the provided context.
+"""
+
 system_prompt = """
 You are an expert AI Radiologist specializing in Musculoskeletal (MSK) Imaging and orthopedic implants.
 
