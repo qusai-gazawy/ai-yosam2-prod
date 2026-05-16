@@ -8,9 +8,16 @@ import json
 import fitz  # PyMuPDF
 from google.oauth2 import service_account
 
-# --- PAGE CONFIG ---
-st.set_page_config(page_title="AI-YOSAM2 Research Lab", layout="wide")
+# --- 5. APP INTERFACE ---
+st.title("🏥 AI-YOSAM2: Multi-Method Evaluation")
 
+# Shortened, formal academic acknowledgment block
+st.markdown("""
+<div style="font-size: 0.85rem; color: #666; line-height: 1.4; margin-bottom: 20px;">
+    <strong>Supported by NSF DART</strong> (Award No. OIA-1946391). <br>
+    <em>Any opinions, findings, or conclusions expressed do not necessarily reflect the views of the National Science Foundation.</em>
+</div>
+""", unsafe_allow_html=True)
 
 # --- 1. LOCAL DEMO CONFIG (FULLY OFFLINE - 2 BOOKS & 5 IMAGES) ---
 DEMO_BOOKS = {
