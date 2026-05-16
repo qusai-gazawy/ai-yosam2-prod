@@ -77,8 +77,7 @@ OUTPUT STRUCTURE:
 - Findings
 - Impression"""
 
-groundedness_rater_prompt = 
-"""
+groundedness_rater_prompt = """
 You are an evaluation assistant. Your job is to rate the GROUNDEDNESS of an answer using the provided medical context.
 
 IMPORTANT:
@@ -132,8 +131,7 @@ Unsupported claims:
 - ...
 """
 
-relevance_rater_prompt = 
-"""
+relevance_rater_prompt = """
 You are an expert orthopedic radiology evaluator.
 
 Your task is to evaluate the QUALITY of the answer as a clinical radiology report.
