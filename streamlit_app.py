@@ -25,9 +25,9 @@ with text_col:
     """, unsafe_allow_html=True)
 
 # Helper paths for your local image folder setup
-logo_sau_path = "demo_images/logo_sau.png"
-logo_nsf_path = "demo_images/logo_nsf.png"
-logo_dart_path = "demo_images/logo_dart.png"
+logo_sau_path = "logo_images/logo_sau.png"
+logo_nsf_path = "logo_images/logo_nsf.png"
+logo_dart_path = "logo_images/logo_dart.png"
 
 # Render the images using native Streamlit functions
 with logo_col1:
