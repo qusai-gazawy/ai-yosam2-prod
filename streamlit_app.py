@@ -136,17 +136,12 @@ else:
         img_pil = PIL.Image.open(uploaded_img)
         img_b64 = encode_image_base64(img_bytes)
         ready_to_run = True
-
 # --- 6. MAIN WORKBENCH EXECUTION ---
 if ready_to_run:
-    preview_col1, preview_col2 = st.columns([1, 2])
-    with preview_col1:
-        st.image(img_pil, caption="Target Evaluation Image", width=300)
-    with preview_col2:
-        with st.expander("📄 RAG Context Preview (Extracted from Textbook)"):
-            st.text(relevant_context if relevant_context else "No matching chunks found for the keywords.")
+    # Display the target X-ray image without the text context preview expander
+    st.image(img_pil, caption="Target Evaluation Image", width=400)
 
-    if st.button("Run Multimodal Comparison"):
+    if st.button("🚀 Run Multimodal Comparison"):
         results = []
 
         methods = [
