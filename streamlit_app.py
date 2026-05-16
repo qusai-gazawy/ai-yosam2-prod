@@ -9,7 +9,7 @@ import fitz  # PyMuPDF
 from google.oauth2 import service_account
 
 # --- 5. APP INTERFACE ---
-st.title("🏥 AI-YOSAM2: Multi-Method Evaluation")
+st.title("AI-YOSAM2: Knee Implant Interpretation in X-rays")
 
 # Shortened, formal academic acknowledgment block
 st.markdown("""
@@ -165,9 +165,6 @@ Scoring:
 
 DO NOT penalize for missing image access.
 """
-
-# --- 5. APP INTERFACE ---
-st.title("🏥 AI-YOSAM2: Multi-Method Evaluation")
 
 st.sidebar.header("Data Selection Mode")
 data_mode = st.sidebar.radio("Choose Input Method:", ["Run Quick Demo Setup", "Upload Custom Files"])
