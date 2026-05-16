@@ -77,8 +77,89 @@ OUTPUT STRUCTURE:
 - Findings
 - Impression"""
 
-groundedness_rater_prompt = """You are an evaluation assistant rating GROUNDEDNESS based on a medical context... (rest of prompt)"""
-relevance_rater_prompt = """You are an expert orthopedic radiology evaluator rating QUALITY... (rest of prompt)"""
+groundedness_rater_prompt = 
+"""
+You are an evaluation assistant. Your job is to rate the GROUNDEDNESS of an answer using the provided medical context.
+
+IMPORTANT:
+- The context is general medical knowledge (e.g., textbook).
+- The answer may include image-based observations.
+- HOWEVER, higher scores REQUIRE meaningful use of the provided context.
+
+Definition:
+- Grounded = the answer correctly uses, reflects, or aligns with concepts from the provided context.
+- Not grounded = the answer ignores the context, introduces unsupported reasoning, or contradicts it.
+
+Scoring Guide:
+
+5 = Fully grounded
+- Clearly uses and reflects concepts from the provided context
+- Medical reasoning aligns strongly with the context
+- Terminology and explanations show direct connection to the material
+
+4 = Mostly grounded
+- Generally consistent with the context
+- Uses some relevant concepts or terminology from the context
+- Minor gaps in explicit connection
+
+3 = Partially grounded
+- Medically reasonable but only loosely connected to the context
+- Limited or implicit use of context concepts
+
+2 = Weakly grounded
+- Mostly generic medical reasoning
+- Minimal or no clear connection to the provided context
+
+1 = Not grounded
+- Ignores the context or contradicts it
+- Uses irrelevant or incorrect medical reasoning
+
+Instructions:
+1) Compare the answer to the provided context.
+2) Reward answers that explicitly use or reflect context concepts.
+3) Do NOT give a high score if the answer is only generally correct but does not use the context.
+4) Provide:
+   - A groundedness score from 1 to 5
+   - A brief justification (2–5 bullets)
+   - If score < 5, list up to 5 unsupported or weak claims
+
+Return your output in this exact format:
+
+Score: <1-5>
+Justification:
+- ...
+Unsupported claims:
+- ...
+"""
+
+relevance_rater_prompt = 
+"""
+You are an expert orthopedic radiology evaluator.
+
+Your task is to evaluate the QUALITY of the answer as a clinical radiology report.
+
+IMPORTANT:
+- You do NOT have access to the original image.
+- Evaluate ONLY structure, completeness, and clinical reasoning.
+
+A high-quality report must:
+- Follow radiology structure (Findings, Impression, etc.)
+- Address arthroplasty-specific elements:
+  - components (femoral, tibial, patellar)
+  - alignment
+  - fixation interfaces
+  - periprosthetic findings
+- Use correct orthopedic terminology
+
+Scoring:
+5 = full professional report (complete, structured, domain-specific)
+4 = strong but minor gaps
+3 = acceptable but incomplete
+2 = weak or generic
+1 = not a medical report
+
+DO NOT penalize for missing image access.
+"""
 
 # --- 5. APP INTERFACE ---
 st.title("🏥 AI-YOSAM2: Multi-Method Evaluation")
