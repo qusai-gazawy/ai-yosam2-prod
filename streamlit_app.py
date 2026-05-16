@@ -11,13 +11,37 @@ from google.oauth2 import service_account
 # --- 5. APP INTERFACE ---
 st.title("AI-YOSAM2: Knee Implant Interpretation in X-rays")
 
-# Shortened, formal academic acknowledgment block
-st.markdown("""
-<div style="font-size: 0.85rem; color: #666; line-height: 1.4; margin-bottom: 20px;">
-    <strong>Supported by NSF DART</strong> (Award No. OIA-1946391). <br>
-    <em>Any opinions, findings, or conclusions expressed do not necessarily reflect the views of the National Science Foundation.</em>
-</div>
-""", unsafe_allow_html=True)
+# Create a layout: Left side for text, Right side for logos
+text_col, logo_col1, logo_col2, logo_col3 = st.columns([3, 1, 1, 1])
+
+with text_col:
+    st.markdown("""
+    <div style="font-size: 0.85rem; color: #666; line-height: 1.4;">
+        <strong>Supported by NSF DART</strong> (Award No. OIA-1946391) & <strong>SAU</strong>.<br>
+        <em>Any opinions, findings, or conclusions expressed do not necessarily reflect the views of the National Science Foundation.</em>
+    </div>
+    """, unsafe_allow_html=True)
+
+# Helper paths for the logos
+logo_sau_path = "logo_images/logo_sau.png"
+logo_nsf_path = "logo_images/logo_nsf.png"
+logo_dart_path = "logo_images/logo_dart.png"
+
+# Render logos if they exist locally
+with logo_col1:
+    if os.path.exists(logo_sau_path):
+        st.image(logo_sau_path, use_container_width=True)
+
+with logo_col2:
+    if os.path.exists(logo_nsf_path):
+        st.image(logo_nsf_path, use_container_width=True)
+
+with logo_col3:
+    if os.path.exists(logo_dart_path):
+        st.image(logo_dart_path, use_container_width=True)
+
+# Add a tiny space below the header section
+st.write("")
 
 # --- 1. LOCAL DEMO CONFIG (FULLY OFFLINE - 2 BOOKS & 5 IMAGES) ---
 DEMO_BOOKS = {
