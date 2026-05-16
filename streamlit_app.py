@@ -145,7 +145,7 @@ if ready_to_run:
         with st.expander("📄 RAG Context Preview (Extracted from Textbook)"):
             st.text(relevant_context if relevant_context else "No matching chunks found for the keywords.")
 
-    if st.button("🚀 Run Triple-Method Comparison"):
+    if st.button("Run Multimodal Comparison"):
         results = []
 
         methods = [
