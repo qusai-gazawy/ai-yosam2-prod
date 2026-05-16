@@ -16,22 +16,6 @@ text_col, logo_col1, logo_col2, logo_col3 = st.columns([3, 1, 1, 1])
 
 with text_col:
     st.markdown("""
-    <div style="font-size: 0.85rem; color: #666; line-height: 1.4;">
-        <strong>Supported by NSF DART</strong> (Award No. OIA-1946391) & <strong>SAU</strong>.<br>
-        <em>Any opinions, findings, or conclusions expressed do not necessarily reflect the views of the National Science Foundation.</em>
-    </div>
-    """, unsafe_allow_html=True)
-
-# Helper paths for the logos
-logo_sau_path = "logo_images/logo_sau.png"
-logo_nsf_path = "logo_images/logo_nsf.png"
-logo_dart_path = "logo_images/logo_dart.png"
-
-# Create a layout: Left side for text, Right side for logos
-text_col, logo_col1, logo_col2, logo_col3 = st.columns([3, 1, 1, 1])
-
-with text_col:
-    st.markdown("""
     <div style="font-size: 0.85rem; color: #666; line-height: 1.4; padding-top: 10px;">
         <strong>Supported by NSF DART</strong> (Award No. OIA-1946391) & <strong>SAU</strong>.<br>
         <em>Any opinions, findings, or conclusions expressed do not necessarily reflect the views of the National Science Foundation.</em>
@@ -59,7 +43,6 @@ with logo_col3:
         st.markdown(f'<div style="display: flex; align-items: center; justify-content: center; height: 100%;"><img src="data:image/png;base64,{base64.b64encode(open(logo_dart_path, "rb").read()).decode()}" {img_style}></div>', unsafe_allow_html=True)
 
 st.write("")
-
 # --- 1. LOCAL DEMO CONFIG (FULLY OFFLINE - 2 BOOKS & 5 IMAGES) ---
 DEMO_BOOKS = {
     "📕 Textbook 1: Osteoarthritis of the Knee": "demo_books/Osteoarthritis-of-the-knee.pdf",
