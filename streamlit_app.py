@@ -13,7 +13,7 @@ st.set_page_config(page_title="AI-YOSAM2 Research Lab", layout="wide")
 
 # --- 1. LOCAL DEMO CONFIG (FULLY OFFLINE - 2 BOOKS & 5 IMAGES) ---
 DEMO_BOOKS = {
-    "📕 Textbook 1: Osteoarthritis of the Knee": "demo_books/Osteoarthritis_of_the_knee.pdf",
+    "📕 Textbook 1: Osteoarthritis of the Knee": "demo_books/Osteoarthritis-of-the-knee.pdf",
     "📗 Textbook 2: Principle of Orthopedic Implants": "demo_books/Principle_of_Orthopedic_Implants.pdf"
 }
 
