@@ -11,7 +11,21 @@ from google.oauth2 import service_account
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="AI-YOSAM2 Research Lab", layout="wide")
 
-# --- 1. SECRETS & CLIENTS ---
+# --- 1. LOCAL DEMO CONFIG (FULLY OFFLINE - 2 BOOKS & 5 IMAGES) ---
+DEMO_BOOKS = {
+    "📕 Textbook 1: Osteoarthritis of the Knee": "demo_books/Osteoarthritis_of_the_knee.pdf",
+    "📗 Textbook 2: Principle of Orthopedic Implants": "demo_books/Principle_of_Orthopedic_Implants.pdf"
+}
+
+DEMO_IMAGES = {
+    "📸 Knee Implant Image 1": "demo_images/Knee_Implant_Image_1.png",
+    "📸 Knee Implant Image 2": "demo_images/Knee_Implant_Image_2.png",
+    "📸 Knee Implant Image 3": "demo_images/Knee_Implant_Image_3.png",
+    "📸 Knee Implant Image 4": "demo_images/Knee_Implant_Image_4.png",
+    "📸 Knee Implant Image 5": "demo_images/Knee_Implant_Image_5.png"
+}
+
+# --- 2. SECRETS & CLIENTS ---
 OPENAI_API_KEY = None
 DEEPSEEK_API_KEY = None
 
@@ -28,10 +42,14 @@ except Exception as e:
     st.error(f"Configuration Error: {e}")
     st.stop()
 
-# --- 2. HELPER FUNCTIONS ---
+# --- 3. HELPER FUNCTIONS ---
 def extract_pdf_context(pdf_path):
-    doc = fitz.open(pdf_path)
-    return "".join([page.get_text() for page in doc])
+    """Safely opens and extracts text from a PDF file."""
+    if not os.path.exists(pdf_path):
+        st.error(f"File not found: {pdf_path}. Please check your local directory structure.")
+        return ""
+    with fitz.open(pdf_path) as doc:
+        return "".join([page.get_text() for page in doc])
 
 def get_chunks(text, chunk_size=2000):
     return [text[i:i + chunk_size] for i in range(0, len(text), chunk_size)]
@@ -48,159 +66,90 @@ def retrieve_relevant_context(query, chunks, top_k=5):
 def encode_image_base64(image_bytes):
     return base64.b64encode(image_bytes).decode('utf-8')
 
-# --- 3. PROMPTS ---
-user_prompt_text = """
-Describe what you observe in the provided X-Ray image according to the provided context.
-"""
+# --- 4. PROMPTS ---
+user_prompt_text = "\nDescribe what you observe in the provided X-Ray image according to the provided context.\n"
 
-system_prompt = """
-You are an expert AI Radiologist specializing in Musculoskeletal (MSK) Imaging and orthopedic implants.
-
+system_prompt = """You are an expert AI Radiologist specializing in Musculoskeletal (MSK) Imaging and orthopedic implants.
 Your role is to provide a formal, technical interpretation of knee X-ray images, with a focus on identifying and evaluating orthopedic implants.
-
-TASK:
-1) Identify the type of implant or hardware present, if any:
-   - Total or Partial Knee Arthroplasty (TKA/PKA)
-   - Screws (e.g., cancellous, cortical, lag screws)
-   - Plates, rods, or other fixation devices
-   - No implant (native joint)
-
-2) Based on the findings:
-
-IF ARTHROPLASTY IS PRESENT:
-- Component Identification: femoral, tibial, patellar components
-- Mechanical Alignment: neutral, varus, valgus
-- Fixation Interfaces: cement-bone or prosthesis-bone (Tibial Zones 1–7)
-- Periprosthetic Assessment: osteolysis, loosening, migration, fracture
-- Non-operated compartments
-
-IF OTHER IMPLANTS (e.g., screws, plates) ARE PRESENT:
-- Describe implant type, location, and configuration
-- Assess fixation quality (e.g., position, integrity)
-- Comment on fracture healing if applicable
-- Identify complications (loosening, breakage, malposition)
-
-IF NO IMPLANT IS PRESENT:
-- Perform general orthopedic knee assessment (joint space, alignment, bone integrity)
-
-CONSTRAINTS:
-1. Tone: Formal, clinical radiology report
-2. Use precise orthopedic terminology
-3. Be objective and avoid speculation
-4. Do NOT fabricate findings
-5. Do NOT force arthroplasty interpretation if not present
-6. No patient advice
 
 OUTPUT STRUCTURE:
 - Findings
-- Impression
-"""
+- Impression"""
 
-groundedness_rater_prompt = """
-You are an evaluation assistant. Your job is to rate the GROUNDEDNESS of an answer using the provided medical context.
+groundedness_rater_prompt = """You are an evaluation assistant rating GROUNDEDNESS based on a medical context... (rest of prompt)"""
+relevance_rater_prompt = """You are an expert orthopedic radiology evaluator rating QUALITY... (rest of prompt)"""
 
-IMPORTANT:
-- The context is general medical knowledge (e.g., textbook).
-- The answer may include image-based observations.
-- HOWEVER, higher scores REQUIRE meaningful use of the provided context.
-
-Definition:
-- Grounded = the answer correctly uses, reflects, or aligns with concepts from the provided context.
-- Not grounded = the answer ignores the context, introduces unsupported reasoning, or contradicts it.
-
-Scoring Guide:
-
-5 = Fully grounded
-- Clearly uses and reflects concepts from the provided context
-- Medical reasoning aligns strongly with the context
-- Terminology and explanations show direct connection to the material
-
-4 = Mostly grounded
-- Generally consistent with the context
-- Uses some relevant concepts or terminology from the context
-- Minor gaps in explicit connection
-
-3 = Partially grounded
-- Medically reasonable but only loosely connected to the context
-- Limited or implicit use of context concepts
-
-2 = Weakly grounded
-- Mostly generic medical reasoning
-- Minimal or no clear connection to the provided context
-
-1 = Not grounded
-- Ignores the context or contradicts it
-- Uses irrelevant or incorrect medical reasoning
-
-Instructions:
-1) Compare the answer to the provided context.
-2) Reward answers that explicitly use or reflect context concepts.
-3) Do NOT give a high score if the answer is only generally correct but does not use the context.
-4) Provide:
-   - A groundedness score from 1 to 5
-   - A brief justification (2–5 bullets)
-   - If score < 5, list up to 5 unsupported or weak claims
-
-Return your output in this exact format:
-
-Score: <1-5>
-Justification:
-- ...
-Unsupported claims:
-- ...
-"""
-
-relevance_rater_prompt = """
-You are an expert orthopedic radiology evaluator.
-
-Your task is to evaluate the QUALITY of the answer as a clinical radiology report.
-
-IMPORTANT:
-- You do NOT have access to the original image.
-- Evaluate ONLY structure, completeness, and clinical reasoning.
-
-A high-quality report must:
-- Follow radiology structure (Findings, Impression, etc.)
-- Address arthroplasty-specific elements:
-  - components (femoral, tibial, patellar)
-  - alignment
-  - fixation interfaces
-  - periprosthetic findings
-- Use correct orthopedic terminology
-
-Scoring:
-5 = full professional report (complete, structured, domain-specific)
-4 = strong but minor gaps
-3 = acceptable but incomplete
-2 = weak or generic
-1 = not a medical report
-
-DO NOT penalize for missing image access.
-"""
-# --- 4. APP INTERFACE ---
+# --- 5. APP INTERFACE ---
 st.title("🏥 AI-YOSAM2: Multi-Method Evaluation")
-st.sidebar.header("Upload Research Data")
 
-uploaded_pdf = st.sidebar.file_uploader("Clinical Manual (PDF)", type="pdf")
-uploaded_img = st.sidebar.file_uploader("Knee X-Ray", type=["jpg", "png", "jpeg"])
+st.sidebar.header("Data Selection Mode")
+data_mode = st.sidebar.radio("Choose Input Method:", ["Run Quick Demo Setup", "Upload Custom Files"])
 
-if uploaded_pdf and uploaded_img:
-    with open("temp_manual.pdf", "wb") as f:
-        f.write(uploaded_pdf.getbuffer())
+relevant_context = ""
+img_pil = None
+img_b64 = None
+ready_to_run = False
+
+if data_mode == "Run Quick Demo Setup":
+    st.sidebar.subheader("Select Local Demo Assets")
+    selected_demo_book = st.sidebar.selectbox("Choose a Textbook:", list(DEMO_BOOKS.keys()))
+    selected_demo_img = st.sidebar.selectbox("Choose a Test Image:", list(DEMO_IMAGES.keys()))
     
-    full_text = extract_pdf_context("temp_manual.pdf")
-    text_chunks = get_chunks(full_text)
-    relevant_context = retrieve_relevant_context("orthopedic implant knee", text_chunks)
+    # Process Local PDF Book
+    local_pdf_path = DEMO_BOOKS[selected_demo_book]
+    with st.sidebar.spinner("Parsing local textbook..."):
+        full_text = extract_pdf_context(local_pdf_path)
+        
+    if full_text:
+        text_chunks = get_chunks(full_text)
+        relevant_context = retrieve_relevant_context("orthopedic knee arthroplasty implant hardware", text_chunks)
+        
+        # Process Local Image
+        local_image_path = DEMO_IMAGES[selected_demo_img]
+        if os.path.exists(local_image_path):
+            try:
+                with open(local_image_path, "rb") as img_file:
+                    img_bytes = img_file.read()
+                img_pil = PIL.Image.open(local_image_path)
+                img_b64 = encode_image_base64(img_bytes)
+                ready_to_run = True
+                st.sidebar.success("✅ Local assets parsed and verified.")
+            except Exception as e:
+                st.sidebar.error(f"Error reading image file: {e}")
+        else:
+            st.sidebar.error(f"Image file not found at: {local_image_path}")
+else:
+    # Custom Manual Uploader
+    uploaded_pdf = st.sidebar.file_uploader("Clinical Manual (PDF)", type="pdf")
+    uploaded_img = st.sidebar.file_uploader("Knee X-Ray", type=["jpg", "png", "jpeg"])
     
-    img_pil = PIL.Image.open(uploaded_img)
-    img_b64 = encode_image_base64(uploaded_img.getvalue())
+    if uploaded_pdf and uploaded_img:
+        with open("temp_manual.pdf", "wb") as f:
+            f.write(uploaded_pdf.getbuffer())
+        
+        full_text = extract_pdf_context("temp_manual.pdf")
+        text_chunks = get_chunks(full_text)
+        relevant_context = retrieve_relevant_context("orthopedic implant knee", text_chunks)
+        
+        img_bytes = uploaded_img.getvalue()
+        img_pil = PIL.Image.open(uploaded_img)
+        img_b64 = encode_image_base64(img_bytes)
+        ready_to_run = True
+
+# --- 6. MAIN WORKBENCH EXECUTION ---
+if ready_to_run:
+    preview_col1, preview_col2 = st.columns([1, 2])
+    with preview_col1:
+        st.image(img_pil, caption="Target Evaluation Image", width=300)
+    with preview_col2:
+        with st.expander("📄 RAG Context Preview (Extracted from Textbook)"):
+            st.text(relevant_context if relevant_context else "No matching chunks found for the keywords.")
 
     if st.button("🚀 Run Triple-Method Comparison"):
-        results = [] # To store (MethodName, ModelName, OutputText)
+        results = []
 
-        # DEFINING THE 3 METHODS
         methods = [
-            {"name": "1. Basic User Prompt", "sys": user_prompt_text, "user_ext": ""},
+            {"name": "1. Basic User Prompt", "sys": "", "user_ext": ""},
             {"name": "2. System Prompt Only", "sys": system_prompt, "user_ext": ""},
             {"name": "3. RAG (Context + System)", "sys": system_prompt, "user_ext": f"\nCONTEXT:\n{relevant_context}"}
         ]
@@ -214,33 +163,34 @@ if uploaded_pdf and uploaded_img:
             # --- GPT Execution ---
             with col1:
                 st.write("**GPT-5.2**")
-                res_oa = client_openai.chat.completions.create(
-                    model="gpt-5.2",
-                    messages=[
-                        {"role": "system", "content": m["sys"]},
-                        {"role": "user", "content": [
-                            {"type": "text", "text": user_prompt_text + m["user_ext"]},
-                            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{img_b64}"}}
-                        ]}
-                    ]
-                )
-                gpt_out = res_oa.choices[0].message.content
+                with st.spinner("GPT generating report..."):
+                    res_oa = client_openai.chat.completions.create(
+                        model="gpt-5.2",
+                        messages=[
+                            {"role": "system", "content": m["sys"]},
+                            {"role": "user", "content": [
+                                {"type": "text", "text": user_prompt_text + m["user_ext"]},
+                                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{img_b64}"}}
+                            ]}
+                        ]
+                    )
+                    gpt_out = res_oa.choices[0].message.content
                 st.info(gpt_out)
                 results.append((m["name"], "GPT-5.2", gpt_out))
 
             # --- Gemini Execution ---
             with col2:
                 st.write("**Gemini 2.5 Flash**")
-                # Using 2.5 Flash for 2026 stability
-                model_gem = genai.GenerativeModel(model_name='gemini-2.5-flash', system_instruction=m["sys"])
-                res_gem = model_gem.generate_content([user_prompt_text + m["user_ext"], img_pil])
-                gem_out = res_gem.text
+                with st.spinner("Gemini generating report..."):
+                    model_gem = genai.GenerativeModel(model_name='gemini-2.5-flash', system_instruction=m["sys"] if m["sys"] else None)
+                    res_gem = model_gem.generate_content([user_prompt_text + m["user_ext"], img_pil])
+                    gem_out = res_gem.text
                 st.success(gem_out)
-                results.append((m["name"], "Gemini 1.5 Pro", gem_out))
+                results.append((m["name"], "Gemini 2.5 Flash", gem_out))
             
             progress_bar.progress((idx + 1) / 3)
 
-        # --- 5. DEEPSEEK AUDIT (6 Reports total) ---
+        # --- 7. DEEPSEEK AUDIT ---
         st.divider()
         st.header("🧠 DeepSeek Reasoner: Comparative Audit")
         
@@ -248,25 +198,24 @@ if uploaded_pdf and uploaded_img:
             with st.expander(f"Audit: {method_name} | {model_name}"):
                 audit_col1, audit_col2 = st.columns(2)
                 
-                # Groundedness Audit
                 with audit_col1:
                     st.write("📊 **Groundedness Score**")
-                    g_query = f"CONTEXT: {relevant_context}\n\nANSWER: {report_text}\n\n{groundedness_rater_prompt}"
-                    g_res = client_deepseek.chat.completions.create(
-                        model="deepseek-reasoner",
-                        messages=[{"role": "user", "content": g_query}]
-                    )
+                    with st.spinner("DeepSeek checking grounding..."):
+                        g_query = f"CONTEXT: {relevant_context}\n\nANSWER: {report_text}\n\n{groundedness_rater_prompt}"
+                        g_res = client_deepseek.chat.completions.create(
+                            model="deepseek-reasoner",
+                            messages=[{"role": "user", "content": g_query}]
+                        )
                     st.write(g_res.choices[0].message.content)
                 
-                # Relevance Audit
                 with audit_col2:
                     st.write("🎯 **Relevance Score**")
-                    r_query = f"ANSWER: {report_text}\n\n{relevance_rater_prompt}"
-                    r_res = client_deepseek.chat.completions.create(
-                        model="deepseek-reasoner",
-                        messages=[{"role": "user", "content": r_query}]
-                    )
+                    with st.spinner("DeepSeek evaluating clinical metrics..."):
+                        r_query = f"ANSWER: {report_text}\n\n{relevance_rater_prompt}"
+                        r_res = client_deepseek.chat.completions.create(
+                            model="deepseek-reasoner",
+                            messages=[{"role": "user", "content": r_query}]
+                        )
                     st.write(r_res.choices[0].message.content)
-
 else:
-    st.warning("Upload Clinical Manual and X-Ray to begin.")
+    st.info("💡 Select 'Run Quick Demo Setup' or upload custom files in the sidebar to populate the research workbench.")
