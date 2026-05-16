@@ -11,38 +11,44 @@ from google.oauth2 import service_account
 # --- 5. APP INTERFACE ---
 st.title("AI-YOSAM2: Knee Implant Interpretation in X-rays")
 
-# Create a layout: Left side for text, Right side for logos
+# Create a clean layout column structure
 text_col, logo_col1, logo_col2, logo_col3 = st.columns([3, 1, 1, 1])
 
 with text_col:
+    # Small top padding to shift the text down to align with the middle of the logos
+    st.write("")
     st.markdown("""
-    <div style="font-size: 0.85rem; color: #666; line-height: 1.4; padding-top: 10px;">
+    <div style="font-size: 0.85rem; color: #666; line-height: 1.4;">
         <strong>Supported by NSF DART</strong> (Award No. OIA-1946391) & <strong>SAU</strong>.<br>
         <em>Any opinions, findings, or conclusions expressed do not necessarily reflect the views of the National Science Foundation.</em>
     </div>
     """, unsafe_allow_html=True)
 
-# Helper paths for the logos
+# Helper paths for your local image folder setup
 logo_sau_path = "demo_images/logo_sau.png"
 logo_nsf_path = "demo_images/logo_nsf.png"
 logo_dart_path = "demo_images/logo_dart.png"
 
-# Inline style setup to force a uniform height and middle layout alignment
-img_style = 'style="height: 65px; object-fit: contain; display: block; margin: auto;"'
-
+# Render the images using native Streamlit functions
 with logo_col1:
     if os.path.exists(logo_sau_path):
-        st.markdown(f'<div style="display: flex; align-items: center; justify-content: center; height: 100%;"><img src="data:image/png;base64,{base64.b64encode(open(logo_sau_path, "rb").read()).decode()}" {img_style}></div>', unsafe_allow_html=True)
+        # Shifting the short SAU banner down slightly to line up with the middle of the NSF circle
+        st.write("")
+        st.image(logo_sau_path, use_container_width=True)
 
 with logo_col2:
     if os.path.exists(logo_nsf_path):
-        st.markdown(f'<div style="display: flex; align-items: center; justify-content: center; height: 100%;"><img src="data:image/png;base64,{base64.b64encode(open(logo_nsf_path, "rb").read()).decode()}" {img_style}></div>', unsafe_allow_html=True)
+        # The tall circular NSF logo stays at the top of its column
+        st.image(logo_nsf_path, use_container_width=True)
 
 with logo_col3:
     if os.path.exists(logo_dart_path):
-        st.markdown(f'<div style="display: flex; align-items: center; justify-content: center; height: 100%;"><img src="data:image/png;base64,{base64.b64encode(open(logo_dart_path, "rb").read()).decode()}" {img_style}></div>', unsafe_allow_html=True)
+        # Shifting the short DART text logo down to match SAU
+        st.write("")
+        st.image(logo_dart_path, use_container_width=True)
 
 st.write("")
+
 # --- 1. LOCAL DEMO CONFIG (FULLY OFFLINE - 2 BOOKS & 5 IMAGES) ---
 DEMO_BOOKS = {
     "📕 Textbook 1: Osteoarthritis of the Knee": "demo_books/Osteoarthritis-of-the-knee.pdf",
