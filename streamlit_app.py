@@ -11,17 +11,6 @@ from google.oauth2 import service_account
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="AI-YOSAM2 Research Lab", layout="wide")
 
-# --- BRANDING HEADER / COVER IMAGE ---
-COVER_IMAGE_PATH = "cover_banner.png"
-
-if os.path.exists(COVER_IMAGE_PATH):
-    st.image(COVER_IMAGE_PATH, use_container_width=True)
-else:
-    # Optional placeholder text or styling if the file is missing
-    st.warning("⚠️ Cover banner image file missing. Please place your image at: demo_images/cover_banner.png")
-
-# --- 1. LOCAL DEMO CONFIG (FULLY OFFLINE - 2 BOOKS & 5 IMAGES) ---
-# ... rest of your code remains exactly the same ...
 
 # --- 1. LOCAL DEMO CONFIG (FULLY OFFLINE - 2 BOOKS & 5 IMAGES) ---
 DEMO_BOOKS = {
